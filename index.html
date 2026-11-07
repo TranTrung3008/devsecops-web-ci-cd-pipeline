@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game Cờ X-O (Tic Tac Toe)</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="game-header">
+      <h1 class="game-title">Cờ <span>X - O</span></h1>
+      <div class="controls-top">
+        <button id="sound-toggle" class="icon-btn" title="Bật/Tắt âm thanh">🔊</button>
+        <button id="theme-toggle" class="icon-btn" title="Chuyển chế độ sáng/tối">🌙</button>
+      </div>
+    </header>
+
+    <!-- Game Mode Selection -->
+    <div class="mode-selector">
+      <button class="mode-btn active" data-mode="pvp">👥 2 Người</button>
+      <button class="mode-btn" data-mode="ai-easy">🤖 Máy (Dễ)</button>
+      <button class="mode-btn" data-mode="ai-hard">🧠 Máy (Khó)</button>
+    </div>
+
+    <!-- Status & Turn Indicator -->
+    <div class="turn-indicator" id="turn-indicator">
+      Lượt của: <span class="turn-badge x-turn" id="turn-text">X</span>
+    </div>
+
+    <!-- Score Board -->
+    <div class="scoreboard">
+      <div class="score-card player-x active" id="card-x">
+        <span class="player-label" id="label-x">Người chơi X</span>
+        <span class="score-value" id="score-x">0</span>
+      </div>
+      <div class="score-card tie-card">
+        <span class="player-label">Hòa</span>
+        <span class="score-value" id="score-ties">0</span>
+      </div>
+      <div class="score-card player-o" id="card-o">
+        <span class="player-label" id="label-o">Người chơi O</span>
+        <span class="score-value" id="score-o">0</span>
+      </div>
+    </div>
+
+    <!-- Tic Tac Toe Board -->
+    <div class="board-wrapper">
+      <div class="board" id="board">
+        <button class="cell" data-index="0"></button>
+        <button class="cell" data-index="1"></button>
+        <button class="cell" data-index="2"></button>
+        <button class="cell" data-index="3"></button>
+        <button class="cell" data-index="4"></button>
+        <button class="cell" data-index="5"></button>
+        <button class="cell" data-index="6"></button>
+        <button class="cell" data-index="7"></button>
+        <button class="cell" data-index="8"></button>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="actions">
+      <button class="btn btn-primary" id="restart-btn">🔄 Ván mới</button>
+      <button class="btn btn-secondary" id="reset-scores-btn">🗑️ Đặt lại điểm</button>
+    </div>
+  </div>
+
+  <!-- Winner Modal -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <div class="modal-emoji" id="modal-emoji">🏆</div>
+      <h2 class="modal-title" id="modal-title">Chiến Thắng!</h2>
+      <p class="modal-msg" id="modal-msg">Người chơi X đã giành chiến thắng!</p>
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="modal-play-again-btn">Chơi tiếp</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Canvas for celebration confetti -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <script src="script.js"></script>
+</body>
+</html>

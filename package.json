@@ -1,0 +1,13 @@
+{
+  "name": "game-co-xo",
+  "version": "1.0.0",
+  "description": "Game cờ X-O Tic-Tac-Toe chạy trên Localhost",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": ["tictactoe", "xo", "game"],
+  "author": "",
+  "license": "ISC"
+}
+
