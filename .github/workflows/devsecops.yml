@@ -1,0 +1,26 @@
+name: DevSecOps CI/CD Security Pipeline
+
+# Tự động kích hoạt mỗi khi có ai push code lên nhánh main
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  pipeline-init:
+    name: 🚀 Khoi Dong Pipeline DevSecOps
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 1. Keo ma nguon ve may ao GitHub
+        uses: actions/checkout@v4
+
+      - name: 2. Thong tin nhom thuc hien
+        run: |
+          echo "========================================================="
+          echo "DO AN CHUYEN NGANH: XAY DUNG QUY TRINH DEVSECOPS CI/CD"
+          echo "Thanh vien 1: Do Thanh Tong (Dev-Sec)"
+          echo "Thanh vien 2: Tran Nguyen Duc Trung (Sec-Ops)"
+          echo "Trang thai: Khoi tao ha tang CI/CD GitHub Actions thanh cong!"
+          echo "========================================================="
