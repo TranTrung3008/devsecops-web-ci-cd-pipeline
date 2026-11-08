@@ -25,7 +25,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_ENABLE_SUMMARY: true
 
-    # ====================================================================
+   # ====================================================================
   # CỔNG 2: STATIC APPLICATION SECURITY TESTING - SAST (SEMGREP)
   # ====================================================================
   sast-scan:
@@ -37,25 +37,15 @@ jobs:
       - name: 1. Checkout ma nguon
         uses: actions/checkout@v4
 
-      # Quét mã nguồn và loại trừ thư mục .github để tránh lỗi mutable tag
-      # Xuất cả màn hình console VÀ xuất file SARIF báo cáo
+      # Security Gate: Nếu phát hiện lỗi ERROR / CRITICAL sẽ trả về exit code 1 (FAIL)
       - name: 2. Kich hoat Semgrep quet ma nguon va Security Gate
         run: |
           docker run --rm -v ${{ github.workspace }}:/src returntocorp/semgrep semgrep scan \
-            --config "p/security-audit" \
-            --config "p/owasp-top-ten" \
-            --exclude ".github" \
-            --error \
-            --sarif --output /src/semgrep-results.sarif || true
-          
-          # In kết quả dạng text ra màn hình đen cho dễ đọc
-          docker run --rm -v ${{ github.workspace }}:/src returntocorp/semgrep semgrep scan \
-            --config "p/security-audit" \
+            --config "p/javascript" \
             --config "p/owasp-top-ten" \
             --exclude ".github" \
             --error
 
-      # Luu file bao cao SARIF de nop cho hoi dong
       - name: 3. Luu tru ket qua bao cao Semgrep
         if: always()
         uses: actions/upload-artifact@v4
