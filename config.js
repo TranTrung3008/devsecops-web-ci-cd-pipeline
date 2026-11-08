@@ -4,4 +4,3 @@ module.exports = {
     AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY || "",
     STRIPE_API_TOKEN: process.env.STRIPE_API_TOKEN || ""
 };
-
