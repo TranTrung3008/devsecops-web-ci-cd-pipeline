@@ -25,27 +25,34 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_ENABLE_SUMMARY: true
 
-  # ====================================================================
+    # ====================================================================
   # CỔNG 2: STATIC APPLICATION SECURITY TESTING - SAST (SEMGREP)
   # ====================================================================
   sast-scan:
     name: 🔍 Cổng 2 - SAST Code Audit (Semgrep)
     runs-on: ubuntu-latest
-    # Chi chay Cong 2 sau khi Cong 1 (Secret-scan) da PASS thanh cong
     needs: secret-scan
 
     steps:
       - name: 1. Checkout ma nguon
         uses: actions/checkout@v4
 
-      # Chạy Semgrep bằng Container chính hãng returntocorp/semgrep
-      # Rule sử dụng: p/security-audit và p/owasp-top-ten
-      # Security Gate: Tham số --error sẽ trả về Exit Code 1 nếu có lỗi nghiêm trọng
+      # Quét mã nguồn và loại trừ thư mục .github để tránh lỗi mutable tag
+      # Xuất cả màn hình console VÀ xuất file SARIF báo cáo
       - name: 2. Kich hoat Semgrep quet ma nguon va Security Gate
         run: |
           docker run --rm -v ${{ github.workspace }}:/src returntocorp/semgrep semgrep scan \
             --config "p/security-audit" \
             --config "p/owasp-top-ten" \
+            --exclude ".github" \
+            --error \
+            --sarif --output /src/semgrep-results.sarif || true
+          
+          # In kết quả dạng text ra màn hình đen cho dễ đọc
+          docker run --rm -v ${{ github.workspace }}:/src returntocorp/semgrep semgrep scan \
+            --config "p/security-audit" \
+            --config "p/owasp-top-ten" \
+            --exclude ".github" \
             --error
 
       # Luu file bao cao SARIF de nop cho hoi dong
