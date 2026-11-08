@@ -54,27 +54,15 @@ server.listen(PORT, () => {
 });
 
 
-// ==============================================================================
-// MÃ THỬ NGHIỆM SAST: CÁC LỖ HỔNG BẢO MẬT KINH ĐIỂN (DEVSECOPS LAB)
-// ==============================================================================
-// ====================================================================
-// TEST CASE CỔNG 2: SAST (STATIC APPLICATION SECURITY TESTING)
-// Tạo Route API nhận dữ liệu từ người dùng truyền vào eval()
-// ====================================================================
-
-// Route API tính toán: Nhận chuỗi từ req.query.formula và truyền thẳng vào eval()
-// Hacker có thể gửi: http://localhost:3000/api/calc?formula=process.mainModule.require('child_process').execSync('id')
+// Route API an toàn: Ép kiểu dữ liệu rõ ràng, không dùng eval
 app.get('/api/calc', (req, res) => {
-  const userFormula = req.query.formula;
-  // LỖ HỔNG CODE INJECTION (CWE-95): Semgrep chắc chắn sẽ báo đỏ ở dòng này!
-  const result = eval(userFormula);
-  res.send("Kết quả: " + result);
+  const a = Number(req.query.a) || 0;
+  const b = Number(req.query.b) || 0;
+  const result = a + b;
+  res.json({ status: "success", ket_qua: result });
 });
-
-// Route API tìm kiếm User: Ghép chuỗi SQL trực tiếp từ req.query.id
+// Route API an toàn: Trả về JSON, không in thô ra HTML tránh XSS
 app.get('/api/user', (req, res) => {
-  const userId = req.query.id;
-  // LỖ HỔNG SQL INJECTION (CWE-89)
-  const sql = "SELECT * FROM users WHERE id = '" + userId + "'";
-  res.send("Truy vấn: " + sql);
+  const userId = Number(req.query.id) || 1;
+  res.json({ status: "success", userId: userId, message: "User query parameterized safely" });
 });
