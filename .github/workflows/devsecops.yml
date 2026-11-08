@@ -46,8 +46,7 @@ jobs:
           docker run --rm -v ${{ github.workspace }}:/src returntocorp/semgrep semgrep scan \
             --config "p/security-audit" \
             --config "p/owasp-top-ten" \
-            --error \
-            --sarif --output /src/semgrep-results.sarif
+            --error
 
       # Luu file bao cao SARIF de nop cho hoi dong
       - name: 3. Luu tru ket qua bao cao Semgrep
