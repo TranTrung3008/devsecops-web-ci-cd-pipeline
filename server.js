@@ -57,16 +57,24 @@ server.listen(PORT, () => {
 // ==============================================================================
 // MÃ THỬ NGHIỆM SAST: CÁC LỖ HỔNG BẢO MẬT KINH ĐIỂN (DEVSECOPS LAB)
 // ==============================================================================
+// ====================================================================
+// TEST CASE CỔNG 2: SAST (STATIC APPLICATION SECURITY TESTING)
+// Tạo Route API nhận dữ liệu từ người dùng truyền vào eval()
+// ====================================================================
 
-// LỖI 1 (CWE-95): Sử dụng hàm nguy hiểm eval() để thực thi code từ input người dùng
-function calculateExpression(userInput) {
-  // Lỗ hổng: Kẻ tấn công có thể chèn mã độc thực thi tùy ý trên máy chủ
-  return eval(userInput);
-}
+// Route API tính toán: Nhận chuỗi từ req.query.formula và truyền thẳng vào eval()
+// Hacker có thể gửi: http://localhost:3000/api/calc?formula=process.mainModule.require('child_process').execSync('id')
+app.get('/api/calc', (req, res) => {
+  const userFormula = req.query.formula;
+  // LỖ HỔNG CODE INJECTION (CWE-95): Semgrep chắc chắn sẽ báo đỏ ở dòng này!
+  const result = eval(userFormula);
+  res.send("Kết quả: " + result);
+});
 
-// LỖI 2 (CWE-89): Ghép chuỗi trực tiếp vào câu lệnh SQL (SQL Injection)
-function getUserData(userId) {
-  // Lỗ hổng: Không tham số hóa (Parameterized Query) tạo cơ hội khai thác SQL Injection
-  const sqlQuery = "SELECT * FROM users WHERE id = '" + userId + "' AND active = 1";
-  return sqlQuery;
-}
+// Route API tìm kiếm User: Ghép chuỗi SQL trực tiếp từ req.query.id
+app.get('/api/user', (req, res) => {
+  const userId = req.query.id;
+  // LỖ HỔNG SQL INJECTION (CWE-89)
+  const sql = "SELECT * FROM users WHERE id = '" + userId + "'";
+  res.send("Truy vấn: " + sql);
+});
