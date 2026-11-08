@@ -1,6 +1,5 @@
 name: DevSecOps CI/CD Security Pipeline
 
-# Tự động kích hoạt mỗi khi có ai push code lên nhánh main
 on:
   push:
     branches: [ "main" ]
@@ -8,19 +7,25 @@ on:
     branches: [ "main" ]
 
 jobs:
-  pipeline-init:
-    name: 🚀 Khoi Dong Pipeline DevSecOps
+  # ====================================================================
+  # CỔNG BẢO MẬT SỐ 1: SECRET SCANNING (GITLEAKS)
+  # Mục tiêu: Quét và ngăn chặn lộ lọt API Key, Token, Mật khẩu trong code
+  # ====================================================================
+  secret-scan:
+    name: Secret Scanning (Gitleaks)
     runs-on: ubuntu-latest
 
     steps:
-      - name: 1. Keo ma nguon ve may ao GitHub
+      # Bước 1: Kéo toàn bộ lịch sử commit về máy ảo để Gitleaks soi
+      - name: 1. Checkout ma nguon (Fetch-depth = 0)
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: 2. Thong tin nhom thuc hien
-        run: |
-          echo "========================================================="
-          echo "DO AN CHUYEN NGANH: XAY DUNG QUY TRINH DEVSECOPS CI/CD"
-          echo "Thanh vien 1: Do Thanh Tong (Dev-Sec)"
-          echo "Thanh vien 2: Tran Nguyen Duc Trung (Sec-Ops)"
-          echo "Trang thai: Khoi tao ha tang CI/CD GitHub Actions thanh cong!"
-          echo "========================================================="
+      # Bước 2: Kích hoạt Gitleaks quét toàn bộ dự án
+      # Security Gate: Nếu phát hiện secret lộ, Gitleaks tự động trả về Exit Code 1 (FAIL PIPELINE)
+      - name: 2. Chay Gitleaks Action kiem tra Secret
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_SUMMARY: true
