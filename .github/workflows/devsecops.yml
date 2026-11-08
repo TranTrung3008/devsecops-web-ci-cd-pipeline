@@ -8,24 +8,51 @@ on:
 
 jobs:
   # ====================================================================
-  # CỔNG BẢO MẬT SỐ 1: SECRET SCANNING (GITLEAKS)
-  # Mục tiêu: Quét và ngăn chặn lộ lọt API Key, Token, Mật khẩu trong code
+  # CỔNG 1: SECRET SCANNING (GITLEAKS)
   # ====================================================================
   secret-scan:
-    name: Secret Scanning (Gitleaks)
+    name: 🔑 Cổng 1 - Secret Scanning (Gitleaks)
     runs-on: ubuntu-latest
-
     steps:
-      # Bước 1: Kéo toàn bộ lịch sử commit về máy ảo để Gitleaks soi
-      - name: 1. Checkout ma nguon (Fetch-depth = 0)
+      - name: 1. Checkout ma nguon
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # Bước 2: Kích hoạt Gitleaks quét toàn bộ dự án
-      # Security Gate: Nếu phát hiện secret lộ, Gitleaks tự động trả về Exit Code 1 (FAIL PIPELINE)
-      - name: 2. Chay Gitleaks Action kiem tra Secret
+      - name: 2. Chay Gitleaks kiem tra Secret
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_ENABLE_SUMMARY: true
+
+  # ====================================================================
+  # CỔNG 2: STATIC APPLICATION SECURITY TESTING - SAST (SEMGREP)
+  # ====================================================================
+  sast-scan:
+    name: 🔍 Cổng 2 - SAST Code Audit (Semgrep)
+    runs-on: ubuntu-latest
+    # Chi chay Cong 2 sau khi Cong 1 (Secret-scan) da PASS thanh cong
+    needs: secret-scan
+
+    steps:
+      - name: 1. Checkout ma nguon
+        uses: actions/checkout@v4
+
+      # Chạy Semgrep bằng Container chính hãng returntocorp/semgrep
+      # Rule sử dụng: p/security-audit và p/owasp-top-ten
+      # Security Gate: Tham số --error sẽ trả về Exit Code 1 nếu có lỗi nghiêm trọng
+      - name: 2. Kich hoat Semgrep quet ma nguon va Security Gate
+        run: |
+          docker run --rm -v ${{ github.workspace }}:/src returntocorp/semgrep semgrep scan \
+            --config "p/security-audit" \
+            --config "p/owasp-top-ten" \
+            --error \
+            --sarif --output /src/semgrep-results.sarif
+
+      # Luu file bao cao SARIF de nop cho hoi dong
+      - name: 3. Luu tru ket qua bao cao Semgrep
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-security-report
+          path: semgrep-results.sarif
