@@ -90,3 +90,43 @@ jobs:
         with:
           name: trivy-sca-report
           path: trivy-sca-results.sarif
+          # ====================================================================
+  # CỔNG 4: CONTAINER IMAGE SECURITY (TRIVY IMAGE)
+  # Mục tiêu: Đóng gói Docker Image và quét lỗ hổng hệ điều hành nền (Base OS)
+  # ====================================================================
+  container-scan:
+    name: 🐳 Cổng 4 - Container Image Scan (Trivy)
+    runs-on: ubuntu-latest
+    # Chỉ chạy Cổng 4 sau khi Cổng 3 (SCA) đã PASS
+    needs: sca-scan
+    steps:
+      - name: 1. Checkout ma nguon
+        uses: actions/checkout@v4
+      # Tiến hành đóng gói ứng dụng web thành Docker Image
+      - name: 2. Build Docker Image
+        run: |
+          docker build -t target-app:${{ github.sha }} .
+      # Kích hoạt Trivy quét trực tiếp Docker Image vừa build
+      # Security Gate: Nếu phát hiện lỗi CRITICAL -> Trả về exit code 1 (FAIL PIPELINE)
+      - name: 3. Kich hoat Trivy quet Docker Image va Security Gate
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'target-app:${{ github.sha }}'
+          format: 'table'
+          severity: 'CRITICAL'
+          exit-code: '1'
+      # Xuất báo cáo định dạng SARIF làm minh chứng đồ án
+      - name: 4. Xuat bao cao Container Scan SARIF
+        if: always()
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'target-app:${{ github.sha }}'
+          format: 'sarif'
+          output: 'trivy-image-results.sarif'
+          severity: 'HIGH,CRITICAL'
+      - name: 5. Luu tru Artifacts bao cao Container Scan
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-container-report
+          path: trivy-image-results.sarif
