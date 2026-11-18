@@ -6,8 +6,14 @@
   "scripts": {
     "start": "node server.js"
   },
-  "keywords": ["tictactoe", "xo", "game"],
+  "dependencies": {
+    "lodash": "4.17.15"
+  },
+  "keywords": [
+    "tictactoe",
+    "xo",
+    "game"
+  ],
   "author": "",
   "license": "ISC"
 }
-
