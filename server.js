@@ -54,7 +54,7 @@ server.listen(PORT, () => {
 });
 
 
-// Route API an toàn: Ép kiểu dữ liệu rõ ràng, không dùng eval
+/* Route API an toàn: Ép kiểu dữ liệu rõ ràng, không dùng eval
 app.get('/api/calc', (req, res) => {
   const a = Number(req.query.a) || 0;
   const b = Number(req.query.b) || 0;
@@ -66,3 +66,4 @@ app.get('/api/user', (req, res) => {
   const userId = Number(req.query.id) || 1;
   res.json({ status: "success", userId: userId, message: "User query parameterized safely" });
 });
+*/
