@@ -90,7 +90,7 @@ jobs:
         with:
           name: trivy-sca-report
           path: trivy-sca-results.sarif
-    # ====================================================================
+  # ====================================================================
   # CỔNG 5: DYNAMIC APPLICATION SECURITY TESTING - DAST (OWASP ZAP)
   # ====================================================================
   dast-scan:
@@ -102,41 +102,26 @@ jobs:
       - name: 1. Checkout ma nguon
         uses: actions/checkout@v4
 
-      - name: 2. Cai dat Node.js va chay Web App
+      - name: 2. Cai dat Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
-      # Cài đặt thư viện và khởi chạy web ngầm ở background bằng nohup
+      # Khoi dong web ngam tren runner
       - name: 3. Khoi dong Web Server ngam tren Runner
         run: |
           npm install
           nohup node server.js > app.log 2>&1 &
-          
-          # Đợi 10 giây cho web khởi động hoàn tất
           sleep 10
-          
-          # In log của server ra xem web báo chạy ở cổng nào
           cat app.log
-          
-          # Kiểm tra kết nối đến trang web
-          curl -I http://localhost:3000/ || curl -I http://localhost:5000/ || true
+          curl -I http://localhost:3000/ || true
 
-      # Kích hoạt OWASP ZAP Baseline Scan quét vào cổng 3000
+      # Su dung Action chinh hang cua OWASP ZAP (Tu dong xuat bao cao HTML)
       - name: 4. Kich hoat OWASP ZAP Baseline Scan
-        run: |
-          chmod 777 $(pwd)
-          docker run --rm -v $(pwd):/zap/wrk/:rw --network="host" \
-            zaproxy/zap-baseline.py -t http://localhost:3000 \
-            -r zap-report.html \
-            -J zap-report.json || true
-
-      # Tải file báo cáo ZAP lên Artifacts để nộp cho thầy cô
-      - name: 5. Luu tru Bao cao OWASP ZAP (HTML & JSON)
-        if: always()
-        uses: actions/upload-artifact@v4
+        uses: zaproxy/action-baseline@v0.14.0
         with:
-          name: owasp-zap-dast-report
-          path: |
-            zap-report.html
-            zap-report.json
+          target: 'http://localhost:3000/'
+          rules_file_name: '.zap/rules.tsv'
+          cmd_options: '-a'
+          allow_issue_writing: false
+          fail_action: false
