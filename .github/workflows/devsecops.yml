@@ -52,3 +52,41 @@ jobs:
         with:
           name: semgrep-security-report
           path: semgrep-results.sarif
+          # ====================================================================
+  # CỔNG 3: SOFTWARE COMPOSITION ANALYSIS - SCA (TRIVY FS)
+  # Mục tiêu: Quét các thư viện dependencies trong package.json
+  # ====================================================================
+  sca-scan:
+    name: 📦 Cổng 3 - SCA Dependency Scan (Trivy)
+    runs-on: ubuntu-latest
+    # Chỉ chạy Cổng 3 khi Cổng 2 (SAST) đã PASS thành công
+    needs: sast-scan
+    steps:
+      - name: 1. Checkout ma nguon
+        uses: actions/checkout@v4
+      # Sử dụng Action chính thức của Aqua Security Trivy
+      # Security Gate: exit-code: '1' sẽ chặn pipeline nếu có lỗi HIGH hoặc CRITICAL
+      - name: 2. Kich hoat Trivy quet Dependencies va Security Gate
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'table'
+          severity: 'HIGH,CRITICAL'
+          exit-code: '1'
+      # Xuat file bao cao dinh dang SARIF de lam minh chung
+      - name: 3. Xuat file bao cao SARIF
+        if: always()
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-sca-results.sarif'
+          severity: 'HIGH,CRITICAL'
+      - name: 4. Luu tru Artifacts bao cao SCA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-sca-report
+          path: trivy-sca-results.sarif
