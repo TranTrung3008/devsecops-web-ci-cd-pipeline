@@ -90,3 +90,57 @@ jobs:
         with:
           name: trivy-sca-report
           path: trivy-sca-results.sarif
+  # ====================================================================
+  # CỔNG 4: DYNAMIC APPLICATION SECURITY TESTING - DAST (OWASP ZAP)
+  # Mục tiêu: Khởi chạy Web thật và quét kiểm thử động từ bên ngoài
+  # ====================================================================
+  dast-scan:
+    name: 🌐 Cổng 4 - DAST Web Scan (OWASP ZAP)
+    runs-on: ubuntu-latest
+    # Chỉ chạy Cổng 5 sau khi Cổng 4 (Container scan) đã PASS
+    needs: sca-scan
+
+    steps:
+      - name: 1. Checkout ma nguon
+        uses: actions/checkout@v4
+
+      # Đóng gói và khởi chạy container web chạy ngầm ở port 3000
+      - name: 2. Khoi chay ung dung Web ngam trong Runner
+        run: |
+          docker build -t target-app:dast .
+          docker run -d --name my-running-web -p 3000:3000 target-app:dast
+          
+          # Đợi 5 giây để web server Node.js sẵn sàng lắng nghe request
+          sleep 5
+          
+          # Kiểm tra xem web đã sống chưa (Health Check)
+          curl -I http://localhost:3000/ || exit 1
+          echo "Web Application is UP and RUNNING on port 3000!"
+
+      # Kích hoạt OWASP ZAP Baseline Scan quét vào http://localhost:3000
+      # Sử dụng network host để container ZAP nhìn thấy container Web
+      - name: 3. Kich hoat OWASP ZAP Baseline Scan
+        run: |
+          # Cấp quyền ghi thư mục hiện tại để ZAP xuất file báo cáo
+          chmod 777 $(pwd)
+          docker run --rm -v $(pwd):/zap/wrk/:rw --network="host" \
+            zaproxy/zap-baseline.py -t http://localhost:3000 \
+            -r zap-report.html \
+            -J zap-report.json || true
+
+      # Dọn dẹp tắt container web sau khi quét xong
+      - name: 4. Don dep Container Web
+        if: always()
+        run: |
+          docker stop my-running-web || true
+          docker rm my-running-web || true
+
+      # Tải file báo cáo ZAP Report (HTML giao diện đẹp) lên Artifacts
+      - name: 5. Luu tru Bao cao OWASP ZAP (HTML & JSON)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: owasp-zap-dast-report
+          path: |
+            zap-report.html
+            zap-report.json
